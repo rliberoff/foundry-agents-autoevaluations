@@ -1,0 +1,26 @@
+name: foundry-agents-autoevaluations
+version: 0.0.1
+description: Knowledge hub
+author: Rodrigo Liberoff
+license: MIT
+targets:
+  - copilot
+  - vscode
+devDependencies:
+  apm:
+    - github/awesome-copilot/skills/microsoft-docs#fb4eb04fcbd30de50052b1155d81167393dfb5aa
+    - github/awesome-copilot/skills/microsoft-code-reference#822d0407def3f01367d09ce35855eb6d8e3ace7c
+    - github/awesome-copilot/agents/Thinking-Beast-Mode.agent.md#9505d750de4c039ef7a9166f440a8e3ef12e2efa
+    - github/awesome-copilot/skills/git-commit#e24be77e6f203409cf99ab7d5a67e1540cb386d3
+  mcp:
+    - name: draw.io-mcp-server
+      registry: false
+      transport: http
+      url: https://mcp.draw.io/mcp
+    - name: microsoft-learn
+      registry: false
+      transport: http
+      url: https://learn.microsoft.com/api/mcp
+lifecycle: []
+includes: auto
+scripts: []

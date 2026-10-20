@@ -1,0 +1,5 @@
+{
+    "chat.editor.preferCopilotHarness": false,
+    "chat.newSession.defaultMode": "Thinking Beast Mode",
+    "chat.useAgentsMdFile": true,
+}

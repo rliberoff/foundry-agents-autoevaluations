@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "draw.io-mcp-server": {
+      "type": "http",
+      "url": "https://mcp.draw.io/mcp",
+      "headers": {}
+    },
+    "microsoft-learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp",
+      "headers": {}
+    }
+  },
+  "inputs": []
+}

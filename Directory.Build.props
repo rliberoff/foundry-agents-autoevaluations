@@ -1,0 +1,63 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Rodrigo E. Liberoff V.</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
+    <FileVersion>$(VersionPrefix)</FileVersion>
+    <InformationalVersion>$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishRepositoryUrl>false</PublishRepositoryUrl>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RepositoryType>git</RepositoryType>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <!--
+    Deterministic builds ensure that the same binary is produced regardless of the machine building it, including paths to sources stored in the symbols. 
+    While deterministic builds are enabled by default in .NET SDK projects, there is an extra property (ContinuousIntegrationBuild) to set on the build server 
+    to normalize stored file paths. These should not be enabled during local development or the debugger won’t be able to find the local source files.
+   -->
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+   <!-- BuildVersion embedding -->
+  <PropertyGroup>
+    <!-- Default for local dev; CI will pass -p:BuildVersion=... -->
+    <BuildVersion Condition="'$(BuildVersion)' == ''">unknown</BuildVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildVersion" Value="$(BuildVersion)" />
+  </ItemGroup>
+
+  <!-- Fail CI if missing -->
+  <Target Name="FailIfMissingBuildVersionInCi" BeforeTargets="BeforeBuild"
+          Condition="'$(TF_BUILD)' == 'true' and '$(BuildVersion)' == ''">
+    <Error Text="BuildVersion MSBuild property must be provided in CI." />
+  </Target>
+
+  <!-- Print it in build logs -->
+  <Target Name="ShowBuildVersion" BeforeTargets="BeforeBuild">
+    <Message Importance="high" Text="BuildVersion=$(BuildVersion)" />
+  </Target>
+
+</Project>
