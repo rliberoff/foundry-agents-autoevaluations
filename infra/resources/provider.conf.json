@@ -1,0 +1,8 @@
+{
+    "subscription_id": "${TF_BACKEND_SUBSCRIPTION_ID}",
+    "storage_account_name": "${TF_BACKEND_STORAGE_ACCOUNT_NAME}",
+    "container_name": "${TF_BACKEND_CONTAINER_NAME}",
+    "key": "azd/${AZURE_ENV_NAME}.tfstate",
+    "resource_group_name": "${TF_BACKEND_RESOURCE_GROUP_NAME}",
+    "use_azuread_auth": "true"
+}
