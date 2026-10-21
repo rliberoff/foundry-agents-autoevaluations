@@ -1,22 +1,12 @@
-output "id" {
-  description = "Identifier of the model access service."
-  value       = azurerm_cognitive_account.foundry.id
-}
-
 output "name" {
   description = "Name of the model access service."
   value       = azurerm_cognitive_account.foundry.name
 }
 
-output "endpoint" {
-  description = "Service endpoint."
-  value       = azurerm_cognitive_account.foundry.endpoint
-  sensitive   = true
-}
-
 output "project_id" {
   description = "The ID of the Microsoft Foundry project."
   value       = azurerm_cognitive_account_project.project.id
+  sensitive   = true
 }
 
 output "project_name" {
@@ -26,5 +16,11 @@ output "project_name" {
 
 output "project_endpoint" {
   description = "Project endpoint used by the solution."
-  value       = "${trimsuffix(azurerm_cognitive_account.foundry.endpoint, "/")}/api/projects/${azurerm_cognitive_account_project.project.name}"
+  value       = "https://${azurerm_cognitive_account.foundry.name}.services.ai.azure.com/api/projects/${azurerm_cognitive_account_project.project.name}"
+  sensitive   = true
+}
+
+output "container_registry_connection_name" {
+  description = "Name of the Foundry project connection to the container registry."
+  value       = azapi_resource.container_registry_connection.name
 }

@@ -39,6 +39,13 @@ variable "foundry_models" {
   nullable = false
   default = [
     {
+      id                             = "gpt-6-luna"
+      model_name                     = "gpt-6-luna"
+      model_version                  = "2026-09-22"
+      sku_name                       = "DataZoneStandard"
+      sku_tokens_per_minute_capacity = 100
+    },
+    {
       id                             = "gpt-6.1-sol"
       model_name                     = "gpt-6.1-sol"
       model_version                  = "2026-09-29"
@@ -46,6 +53,11 @@ variable "foundry_models" {
       sku_tokens_per_minute_capacity = 100
     }
   ]
+
+  validation {
+    condition     = length(var.foundry_models) > 0
+    error_message = "At least one model deployment is required for the hosted demo agent."
+  }
 }
 
 variable "tags" {

@@ -52,7 +52,8 @@ module "appi" {
   name                       = local.resource_names.appi
   log_analytics_workspace_id = module.log.workspace_id
   role_assignments = {
-    "application_insights" = { principal_id = module.mi.identity_principal_id, role_definition_name = "Monitoring Metrics Publisher" }
+    "application_insights"        = { principal_id = module.mi.identity_principal_id, role_definition_name = "Monitoring Metrics Publisher" }
+    "application_insights_reader" = { principal_id = module.mi.identity_principal_id, role_definition_name = "Reader" }
   }
   tags = local.tags
 }
@@ -71,14 +72,20 @@ module "acr" {
 }
 
 module "aif" {
-  source                         = "./modules/aif"
-  resource_group_name            = azurerm_resource_group.rg.name
-  location                       = var.location
-  name                           = local.resource_names.aif
-  identity_id                    = module.mi.identity_id
-  identity_service_principal_ids = [module.mi.identity_principal_id]
-  project_name                   = local.resource_names.aif_project
-  models                         = var.foundry_models
-  log_analytics_workspace_id     = module.log.workspace_id
-  tags                           = local.tags
+  source                                 = "./modules/aif"
+  resource_group_name                    = azurerm_resource_group.rg.name
+  location                               = var.location
+  name                                   = local.resource_names.aif
+  identity_id                            = module.mi.identity_id
+  identity_service_principal_ids         = [module.mi.identity_principal_id]
+  deployment_principal_id                = data.azurerm_client_config.current.object_id
+  identity_client_id                     = module.mi.identity_client_id
+  container_registry_id                  = module.acr.container_registry_id
+  container_registry_endpoint            = module.acr.container_registry_login_server
+  application_insights_id                = module.appi.application_insights_id
+  application_insights_connection_string = module.appi.application_insights_connection_string
+  project_name                           = local.resource_names.aif_project
+  models                                 = var.foundry_models
+  log_analytics_workspace_id             = module.log.workspace_id
+  tags                                   = local.tags
 }

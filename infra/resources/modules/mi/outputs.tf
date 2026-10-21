@@ -1,6 +1,7 @@
 output "identity_id" {
   value       = azurerm_user_assigned_identity.this.id
   description = "Resource ID of the Web App user-assigned identity."
+  sensitive   = true
 }
 
 output "identity_client_id" {

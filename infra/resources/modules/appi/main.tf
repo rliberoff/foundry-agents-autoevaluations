@@ -5,7 +5,7 @@ resource "azurerm_application_insights" "this" {
   application_type             = "web"
   workspace_id                 = var.log_analytics_workspace_id
   local_authentication_enabled = false
-  internet_ingestion_enabled   = false
+  internet_ingestion_enabled   = true
   tags                         = var.tags
 
   lifecycle {

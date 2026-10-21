@@ -41,6 +41,45 @@ variable "identity_service_principal_ids" {
   default     = []
 }
 
+variable "deployment_principal_id" {
+  description = "(Required) Object ID of the identity deploying the hosted agent through azd."
+  type        = string
+  nullable    = false
+}
+
+variable "identity_client_id" {
+  description = "(Required) Client ID of the project's user-assigned managed identity."
+  type        = string
+  nullable    = false
+}
+
+variable "container_registry_id" {
+  description = "(Required) Resource ID of the container registry connected to the project."
+  type        = string
+  nullable    = false
+}
+
+variable "container_registry_endpoint" {
+  description = "(Required) Login server of the container registry connected to the project."
+  type        = string
+  nullable    = false
+  sensitive   = true
+}
+
+variable "application_insights_id" {
+  description = "(Required) Resource ID of Application Insights used for hosted agent telemetry."
+  type        = string
+  nullable    = false
+}
+
+variable "application_insights_connection_string" {
+  description = "(Required) Connection string sent to Foundry as write-only metadata."
+  type        = string
+  nullable    = false
+  sensitive   = true
+  ephemeral   = true
+}
+
 variable "models" {
   description = "(Optional) Specifies the list of models to deploy into this Microsoft Foundry resource."
   type = list(object({

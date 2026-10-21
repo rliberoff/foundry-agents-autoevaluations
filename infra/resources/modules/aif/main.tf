@@ -113,31 +113,31 @@ resource "azurerm_cognitive_account_rai_policy" "content_filter" {
   }
 
   content_filter {
-    name           = "Jailbreak"
-    block_enabled  = false
-    filter_enabled = true
-    source         = "Prompt"
+    name               = "Jailbreak"
+    block_enabled      = false
+    filter_enabled     = true
+    source             = "Prompt"
   }
 
   content_filter {
-    name           = "Indirect Attack"
-    block_enabled  = false
-    filter_enabled = true
-    source         = "Prompt"
+    name               = "Indirect Attack"
+    block_enabled      = false
+    filter_enabled     = true
+    source             = "Prompt"
   }
 
   content_filter {
-    name           = "Protected Material Text"
-    block_enabled  = false
-    filter_enabled = true
-    source         = "Completion"
+    name               = "Protected Material Text"
+    block_enabled      = false
+    filter_enabled     = true
+    source             = "Completion"
   }
 
   content_filter {
-    name           = "Protected Material Code"
-    block_enabled  = false
-    filter_enabled = true
-    source         = "Completion"
+    name               = "Protected Material Code"
+    block_enabled      = false
+    filter_enabled     = true
+    source             = "Completion"
   }
 
   lifecycle {
@@ -174,7 +174,8 @@ locals {
   # The Foundry RBAC roles were renamed (`Azure AI User` -> `Foundry User`), so they are referenced by their
   # role definition ID, which is stable across the rename.
   # Reference: https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry
-  foundry_user_role_definition_id = "${data.azurerm_subscription.current.id}/providers/Microsoft.Authorization/roleDefinitions/53ca6127-db72-4b80-b1b0-d745d6d5456d"
+  foundry_user_role_definition_id            = "${data.azurerm_subscription.current.id}/providers/Microsoft.Authorization/roleDefinitions/53ca6127-db72-4b80-b1b0-d745d6d5456d"
+  foundry_project_manager_role_definition_id = "${data.azurerm_subscription.current.id}/providers/Microsoft.Authorization/roleDefinitions/eadc314b-1a2d-4efa-be10-5d325db5065e"
 }
 
 resource "azurerm_role_assignment" "service_principals_role_assignment" {
@@ -195,6 +196,79 @@ resource "azurerm_role_assignment" "service_principals_project_role_assignment" 
   principal_id                     = each.value
   skip_service_principal_aad_check = true
   principal_type                   = "ServicePrincipal"
+}
+
+# The project managed identity needs `Foundry User` on the account; required by the Teams (Activity protocol) channel.
+# Reference: https://learn.microsoft.com/azure/foundry/agents/concepts/hosted-agent-permissions#foundry-account-setup
+resource "azurerm_role_assignment" "service_principals_account_foundry_user_role_assignment" {
+  for_each = { for i, val in var.identity_service_principal_ids : i => val }
+
+  scope                            = azurerm_cognitive_account.foundry.id
+  role_definition_id               = local.foundry_user_role_definition_id
+  principal_id                     = each.value
+  skip_service_principal_aad_check = true
+  principal_type                   = "ServicePrincipal"
+}
+
+resource "azurerm_role_assignment" "deployer_project" {
+  scope              = azurerm_cognitive_account_project.project.id
+  role_definition_id = local.foundry_project_manager_role_definition_id
+  principal_id       = var.deployment_principal_id
+}
+
+resource "azurerm_role_assignment" "deployer_account" {
+  scope              = azurerm_cognitive_account.foundry.id
+  role_definition_id = local.foundry_user_role_definition_id
+  principal_id       = var.deployment_principal_id
+}
+
+resource "azapi_resource" "container_registry_connection" {
+  type      = "Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview"
+  name      = "container-registry"
+  parent_id = azurerm_cognitive_account_project.project.id
+
+  body = {
+    properties = {
+      category      = "ContainerRegistry"
+      target        = var.container_registry_endpoint
+      authType      = "ManagedIdentity"
+      isSharedToAll = true
+      credentials = {
+        clientId   = var.identity_client_id
+        resourceId = var.container_registry_id
+      }
+      metadata = {
+        ResourceId = var.container_registry_id
+      }
+    }
+  }
+}
+
+resource "azapi_resource" "application_insights_connection" {
+  type                      = "Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview"
+  name                      = "application-insights"
+  parent_id                 = azurerm_cognitive_account_project.project.id
+  schema_validation_enabled = false
+
+  body = {
+    properties = {
+      category      = "AppInsights"
+      target        = var.application_insights_id
+      authType      = "ProjectManagedIdentity"
+      isSharedToAll = true
+      metadata = {
+        ResourceId = var.application_insights_id
+      }
+    }
+  }
+
+  sensitive_body = {
+    properties = {
+      metadata = {
+        ApplicationInsightsConnectionString = var.application_insights_connection_string
+      }
+    }
+  }
 }
 
 resource "azurerm_monitor_diagnostic_setting" "this" {
