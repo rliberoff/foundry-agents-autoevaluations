@@ -1,12 +1,13 @@
 # General
 
 variable "suffix" {
-  description = "(Required) Unique identifier of exactly 5 lowercase letters or digits for this developer's DEV environment."
+  description = "(Optional) Unique identifier of exactly 5 lowercase letters or digits for this developer's DEV environment."
   type        = string
-  nullable    = false
+  nullable    = true
+  default     = null
 
   validation {
-    condition     = can(regex("^[a-z0-9]{5}$", var.suffix))
+    condition     = var.suffix == null || can(regex("^[a-z0-9]{5}$", var.suffix))
     error_message = "suffix must contain exactly 5 lowercase letters or digits."
   }
 }
@@ -43,14 +44,14 @@ variable "foundry_models" {
       model_name                     = "gpt-6-luna"
       model_version                  = "2026-09-22"
       sku_name                       = "DataZoneStandard"
-      sku_tokens_per_minute_capacity = 100
+      sku_tokens_per_minute_capacity = 200
     },
     {
       id                             = "gpt-6.1-sol"
       model_name                     = "gpt-6.1-sol"
       model_version                  = "2026-09-29"
       sku_name                       = "DataZoneStandard"
-      sku_tokens_per_minute_capacity = 100
+      sku_tokens_per_minute_capacity = 200
     }
   ]
 

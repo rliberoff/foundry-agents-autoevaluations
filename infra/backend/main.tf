@@ -1,12 +1,24 @@
 locals {
-  state_resource_group_name  = "rg-demo-foundry-agents-autoevaluation-terraform-${var.suffix}"
-  state_storage_account_name = "sttfstate${var.suffix}"
+  suffix = var.suffix == null ? random_string.suffix[0].result : var.suffix
+  state_resource_group_name  = "rg-demo-foundry-agents-autoevaluation-terraform-${local.suffix}"
+  state_storage_account_name = "sttfstate${local.suffix}"
 
   tags = merge(var.tags, {
     createdAt = "${formatdate("YYYY-MM-DD hh:mm:ss", timestamp())} UTC"
     purpose   = "Terraform remote state"
-    suffix    = var.suffix
+    suffix    = local.suffix
   })
+}
+
+resource "random_string" "suffix" {
+  count = var.suffix == null ? 1 : 0
+
+  length    = 5
+  lower     = true
+  min_lower = 1
+  numeric   = true
+  special   = false
+  upper     = false
 }
 
 data "azurerm_client_config" "current" {}

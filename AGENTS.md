@@ -61,7 +61,7 @@ For anything version-dependent or time-sensitive, such as library APIs, SDK vers
 ## Code generation
 
 - **Follow `.editorconfig`**: when the solution has one, all generated code must follow its style and conventions.
-- **Simplicity**: provide the most straightforward solution that solves the problem. Avoid premature optimization, over-engineering, and "clever" or obscure patterns.
+- **Simplicity**: provide the most straightforward solution that solves the problem. Avoid premature optimization, **over-engineering**, and "clever" or obscure patterns. Keep it simple and readable. Do not create unnecessary complexity, scripts, or abstractions.
 - **Standard first**: prefer the standard library and common, proven patterns. Add a third-party dependency only when it is the industry standard for the task or truly necessary.
 - **Trusted dependencies**: packages from Microsoft, the .NET Foundation, and the official Terraform Providers registry. Use stable versions only, and reuse the versions already pinned in the repository.
 - **Scope**: implement what was requested, without unrequested features. Still handle the input validation, error handling, and security checks the code needs to be correct.

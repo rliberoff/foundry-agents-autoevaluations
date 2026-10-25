@@ -113,31 +113,31 @@ resource "azurerm_cognitive_account_rai_policy" "content_filter" {
   }
 
   content_filter {
-    name               = "Jailbreak"
-    block_enabled      = false
-    filter_enabled     = true
-    source             = "Prompt"
+    name           = "Jailbreak"
+    block_enabled  = false
+    filter_enabled = true
+    source         = "Prompt"
   }
 
   content_filter {
-    name               = "Indirect Attack"
-    block_enabled      = false
-    filter_enabled     = true
-    source             = "Prompt"
+    name           = "Indirect Attack"
+    block_enabled  = false
+    filter_enabled = true
+    source         = "Prompt"
   }
 
   content_filter {
-    name               = "Protected Material Text"
-    block_enabled      = false
-    filter_enabled     = true
-    source             = "Completion"
+    name           = "Protected Material Text"
+    block_enabled  = false
+    filter_enabled = true
+    source         = "Completion"
   }
 
   content_filter {
-    name               = "Protected Material Code"
-    block_enabled      = false
-    filter_enabled     = true
-    source             = "Completion"
+    name           = "Protected Material Code"
+    block_enabled  = false
+    filter_enabled = true
+    source         = "Completion"
   }
 
   lifecycle {

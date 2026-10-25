@@ -1,0 +1,110 @@
+[
+    {
+        "name": "foundry-overview-en",
+        "language": "en",
+        "turns": [
+            "In English, explain Microsoft Foundry in two sentences for a beginner. Consult official documentation and include one official source link.",
+            "For the same platform, distinguish an agent from a model deployment in three short bullet points.",
+            "Summarize our discussion in one sentence and keep the answer in English."
+        ]
+    },
+    {
+        "name": "foundry-overview-es",
+        "language": "es",
+        "turns": [
+            "En español, explica Microsoft Foundry en dos frases para principiantes. Consulta la documentación oficial e incluye un enlace a una fuente oficial.",
+            "Sobre esa misma plataforma, distingue un agente de un despliegue de modelo en tres puntos breves.",
+            "Resume nuestra conversación en una frase y mantén la respuesta en español."
+        ]
+    },
+    {
+        "name": "trace-review-en",
+        "language": "en",
+        "turns": [
+            "In English, give me three beginner steps to review a Microsoft Foundry agent's traces in Application Insights. Use official documentation.",
+            "For that workflow, explain the difference between a trace and an evaluation result without assuming that a successful request has a good quality score.",
+            "Give me a short checklist to investigate missing traces in that setup. Do not ask me to paste credentials or connection strings."
+        ]
+    },
+    {
+        "name": "trace-review-es",
+        "language": "es",
+        "turns": [
+            "En español, indica tres pasos para principiantes para revisar las trazas de un agente de Microsoft Foundry en Application Insights. Usa documentación oficial.",
+            "Para ese flujo, explica la diferencia entre una traza y un resultado de evaluación sin asumir que una petición correcta obtiene una buena nota de calidad.",
+            "Dame una lista breve para investigar la ausencia de trazas en esa configuración. No me pidas credenciales ni cadenas de conexión."
+        ]
+    },
+    {
+        "name": "evaluation-links-en",
+        "language": "en",
+        "turns": [
+            "In English, explain how Microsoft Foundry can evaluate deployed agent interactions using existing traces instead of replaying the requests. Cite official documentation.",
+            "For the evaluation you just described, explain relevance and coherence with a brief example of each. Do not invent measured scores.",
+            "For the same topic, provide two official HTTPS documentation links and explain what each covers. Use full URLs, not shortened links."
+        ]
+    },
+    {
+        "name": "evaluation-links-es",
+        "language": "es",
+        "turns": [
+            "En español, explica cómo Microsoft Foundry puede evaluar interacciones de agentes desplegados a partir de trazas existentes, sin repetir las peticiones. Cita documentación oficial.",
+            "Para la evaluación que acabas de describir, explica relevancia y coherencia con un ejemplo breve de cada una. No inventes puntuaciones medidas.",
+            "Sobre ese mismo tema, proporciona dos enlaces HTTPS de documentación oficial y explica qué cubre cada uno. Usa direcciones completas, no enlaces acortados."
+        ]
+    },
+    {
+        "name": "professional-guidance-en",
+        "language": "en",
+        "turns": [
+            "In English, explain Microsoft Entra managed identities to a beginner in a professional, concise tone. Consult official documentation.",
+            "For that authentication approach, give me three practical checks when an Azure application cannot access a resource. Avoid assuming that every 403 error has the same cause.",
+            "Rewrite your previous answer as a short professional message to a colleague. Keep the uncertainty and do not claim that you inspected our environment."
+        ]
+    },
+    {
+        "name": "professional-guidance-es",
+        "language": "es",
+        "turns": [
+            "En español, explica las identidades administradas de Microsoft Entra a una persona principiante, con un tono profesional y conciso. Consulta documentación oficial.",
+            "Para ese método de autenticación, dame tres comprobaciones prácticas cuando una aplicación de Azure no puede acceder a un recurso. No supongas que todos los errores 403 tienen la misma causa.",
+            "Reescribe tu respuesta anterior como un mensaje profesional breve a un compañero. Conserva las advertencias y no afirmes haber inspeccionado nuestro entorno."
+        ]
+    },
+    {
+        "name": "everyday-cooking-en",
+        "language": "en",
+        "turns": [
+            "Suggest a simple vegetarian dinner I can cook in 30 minutes using chickpeas, tomatoes, and spinach. Include a short ingredient list and clear steps.",
+            "I only have canned chickpeas and frozen spinach. Adjust the recipe and keep the cooking time close to 30 minutes.",
+            "Summarize the final recipe as a concise checklist."
+        ]
+    },
+    {
+        "name": "everyday-cooking-es",
+        "language": "es",
+        "turns": [
+            "Sugiere una cena vegetariana sencilla que pueda preparar en 30 minutos con garbanzos, tomates y espinacas. Incluye una lista breve de ingredientes e instrucciones claras.",
+            "Solo tengo garbanzos enlatados y espinacas congeladas. Adapta la receta y mantén el tiempo de preparación cerca de 30 minutos.",
+            "Resume la receta final como una lista de pasos concisa."
+        ]
+    },
+    {
+        "name": "weekend-planning-en",
+        "language": "en",
+        "turns": [
+            "Plan a relaxed Saturday in a city where it will rain. Suggest indoor activities, an inexpensive lunch, and a realistic schedule.",
+            "Make the plan suitable for someone who prefers quiet places and wants to avoid crowded attractions.",
+            "Summarize the revised plan in three short bullet points."
+        ]
+    },
+    {
+        "name": "weekend-planning-es",
+        "language": "es",
+        "turns": [
+            "Organiza un sábado tranquilo en una ciudad donde lloverá. Sugiere actividades bajo techo, un almuerzo económico y un horario realista.",
+            "Adapta el plan para alguien que prefiere lugares tranquilos y quiere evitar las atracciones concurridas.",
+            "Resume el plan actualizado en tres puntos breves."
+        ]
+    }
+]

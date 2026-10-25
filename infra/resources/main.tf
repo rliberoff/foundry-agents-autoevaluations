@@ -1,18 +1,32 @@
 locals {
+  suffix = var.suffix == null ? random_string.suffix[0].result : var.suffix
+
   resource_names = {
-    resource_group = "rg-demo-foundry-agents-autoevaluation-${var.suffix}"
-    mi             = "mi-demo-foundry-agents-autoevaluation-${var.suffix}"
-    log            = "log-demo-foundry-agents-autoevaluation-${var.suffix}"
-    appi           = "appi-demo-foundry-agents-autoevaluation-${var.suffix}"
-    acr            = "acrdemofoundryagentsautoevaluation${var.suffix}"
-    aif            = "aif-demo-foundry-agents-autoevaluation-${var.suffix}"
-    aif_project    = "proj-demo-foundry-agents-autoevaluation-${var.suffix}"
+    suffix         = local.suffix
+    resource_group = "rg-demo-foundry-agents-autoevaluation-${local.suffix}"
+    mi             = "mi-demo-foundry-agents-autoevaluation-${local.suffix}"
+    log            = "log-demo-foundry-agents-autoevaluation-${local.suffix}"
+    appi           = "appi-demo-foundry-agents-autoevaluation-${local.suffix}"
+    acr            = "acrdemofoundryagentsautoevaluation${local.suffix}"
+    aif            = "aif-demo-foundry-agents-autoevaluation-${local.suffix}"
+    aif_project    = "proj-demo-foundry-agents-autoevaluation-${local.suffix}"
   }
 
   tags = merge(var.tags, {
     createdAt = "${formatdate("YYYY-MM-DD hh:mm:ss", timestamp())} UTC"
-    suffix    = var.suffix
+    suffix    = local.suffix
   })
+}
+
+resource "random_string" "suffix" {
+  count = var.suffix == null ? 1 : 0
+
+  length    = 5
+  lower     = true
+  min_lower = 1
+  numeric   = true
+  special   = false
+  upper     = false
 }
 
 data "azurerm_client_config" "current" {}

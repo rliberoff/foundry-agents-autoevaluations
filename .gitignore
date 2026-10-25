@@ -437,6 +437,8 @@ profile.arm.json
 **/.config/
 
 # .env files for local Development
+.env
+.env.*
 .local.env
 
 # The `dist` folder is usually used as transpiling output

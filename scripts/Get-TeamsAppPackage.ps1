@@ -12,7 +12,7 @@
     Reference: https://learn.microsoft.com/azure/foundry/agents/how-to/publish-copilot-virtual-network#download-and-inspect-the-app-package
 
 .EXAMPLE
-    ./scripts/Get-TeamsAppPackage.ps1 -Environment relv -DeveloperName 'Rodrigo Liberoff' `
+    ./scripts/Get-TeamsAppPackage.ps1 -Environment <name_of_your_environment> -DeveloperName 'Rodrigo Liberoff' `
         -DeveloperWebsiteUrl 'https://github.com/rliberoff' -PrivacyUrl 'https://privacy.microsoft.com' `
         -TermsOfUseUrl 'https://www.microsoft.com/legal/terms-of-use'
 #>
