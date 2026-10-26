@@ -6,6 +6,30 @@ requiredVersions:
   extensions:
     azure.ai.agents: ">= 1.0.0-beta.12"
 
+hooks:
+  postdown:
+    windows:
+      shell: pwsh
+      run: ./scripts/Reset-TerraformBackendCache.ps1
+      interactive: false
+      continueOnError: false
+    posix:
+      shell: sh
+      run: bash ./scripts/reset-terraform-backend-cache.sh
+      interactive: false
+      continueOnError: false
+  postprovision:
+    windows:
+      shell: pwsh
+      run: ./scripts/Initialize-FoundryEvaluation.ps1
+      interactive: false
+      continueOnError: false
+    posix:
+      shell: sh
+      run: bash ./scripts/initialize-foundry-evaluation.sh
+      interactive: false
+      continueOnError: false
+
 services:
   agent-autoevaluations:
     project: ./src/Foundry.Agents.Autoevaluation.Demo
@@ -28,6 +52,8 @@ services:
     environmentVariables:
       - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
         value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+      - name: FoundryContinuousEvaluationOptions__EvaluationId
+        value: ${FOUNDRY_EVALUATION_ID}
     hooks:
       postdeploy:
         windows:

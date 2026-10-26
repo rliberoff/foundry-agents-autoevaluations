@@ -1,0 +1,15 @@
+{
+    "EvaluationName": "evaluation-demo-insights",
+    "ModelDeploymentName": "gpt-6.1-sol",
+    "QualityPassThreshold": 3,
+    "CommunicationPassThreshold": 4,
+    "SafetySeverityThreshold": 3,
+    "Evaluators": [
+        "builtin.relevance",
+        "builtin.coherence",
+        "builtin.fluency",
+        "builtin.violence",
+        "official_microsoft_links",
+        "corporate_communication"
+    ]
+}

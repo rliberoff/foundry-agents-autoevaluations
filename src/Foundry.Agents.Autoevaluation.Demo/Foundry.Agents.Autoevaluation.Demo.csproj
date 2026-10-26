@@ -15,8 +15,4 @@
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="EmbeddedResources\*.py;EmbeddedResources\*.txt" />
-    </ItemGroup>
-
 </Project>

@@ -13,34 +13,9 @@ public sealed class FoundryContinuousEvaluationOptions
     public bool IsEnabled { get; init; }
 
     /// <summary>
-    /// Gets the name of the evaluation.
+    /// Gets the ID of the evaluation group created during azd provisioning.
     /// </summary>
-    [Required]
-    public required string EvaluationName { get; init; }
-
-    /// <summary>
-    /// Gets or sets the name of the model (LLM) used for evaluation.
-    /// </summary>
-    [Required]
-    public required string ModelDeploymentName { get; set; }
-
-    /// <summary>
-    /// Gets the minimum passing quality score on the one-to-five scale.
-    /// </summary>
-    [Range(1, 5)]
-    public int QualityPassThreshold { get; init; } = 3;
-
-    /// <summary>
-    /// Gets the minimum passing corporate communication score.
-    /// </summary>
-    [Range(1, 5)]
-    public int CommunicationPassThreshold { get; init; } = 4;
-
-    /// <summary>
-    /// Gets the maximum passing violence severity on the zero-to-seven scale.
-    /// </summary>
-    [Range(0, 7)]
-    public int SafetySeverityThreshold { get; init; } = 3;
+    public string EvaluationId { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the interval in seconds between evaluation result checks.
@@ -78,11 +53,4 @@ public sealed class FoundryContinuousEvaluationOptions
     /// </summary>
     [Range(0, 100)]
     public int TraceSamplingPercentage { get; init; } = 100;
-
-    /// <summary>
-    /// Gets the list of evaluators to use for the evaluation.
-    /// </summary>
-    [Required]
-    [MinLength(1)]
-    public required IList<string> Evaluators { get; init; } = [];
 }

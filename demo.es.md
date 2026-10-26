@@ -27,6 +27,8 @@ Script o conversación manual
 
 El script solo hace la primera parte: conversar con el agente. No calcula puntuaciones, no registra evaluadores y no carga un conjunto de datos. La aplicación desplegada ya incorpora el servicio que solicita las evaluaciones de las trazas existentes, sin repetir las preguntas al agente.
 
+Los evaluadores personalizados y el grupo de evaluación se crean o reutilizan durante `azd provision`, mediante el hook `postprovision`, antes del despliegue del agente. Sus definiciones están en [infra/foundry](infra/foundry). La aplicación recibe el ID del grupo por configuración y no publica evaluadores ni crea grupos al ejecutarse.
+
 ### Vocabulario mínimo
 
 | Concepto | Significado en esta demo |
@@ -285,11 +287,12 @@ Si es necesario inspeccionar el contenido para diagnosticar, hazlo únicamente c
 
 ## 6. Esperar a que se ejecute la evaluación
 
-La configuración desplegada procede de [appsettings.json](src/Foundry.Agents.Autoevaluation.Demo/appsettings.json). La configuración actual de la demo es:
+La programación de ejecuciones procede de [appsettings.json](src/Foundry.Agents.Autoevaluation.Demo/appsettings.json). El nombre, los criterios y el modelo juez del grupo se aprovisionan desde [infra/foundry/evaluation.json](infra/foundry/evaluation.json). La configuración actual de la demo es:
 
 | Opción | Valor | Efecto |
 | :--- | :--- | :--- |
 | `IsEnabled` | `true` | Activa el servicio de evaluación |
+| `EvaluationId` | Inyectado por AZD | ID del grupo creado o reutilizado durante el aprovisionamiento |
 | `EvaluationName` | `evaluation-demo-insights` | Nombre del grupo que debes buscar |
 | `ModelDeploymentName` | `gpt-6.1-sol` | Despliegue del modelo juez, distinto del modelo del agente |
 | `PollingIntervalMinutes` | `5` | Intervalo entre intentos de evaluación |
@@ -297,7 +300,7 @@ La configuración desplegada procede de [appsettings.json](src/Foundry.Agents.Au
 | `MaxTracesPerRun` | `50` | Máximo solicitado de trazas por ejecución |
 | `TraceSamplingPercentage` | `100` | Mantiene el máximo de trazas sin reducirlo |
 
-La aplicación intenta configurar y lanzar una evaluación al arrancar, y después vuelve a intentarlo periódicamente. La primera puede no contener datos porque todavía no se hayan generado o ingerido conversaciones. No hay una evaluación nueva por cada pregunta, ni un temporizador que empiece cuando lanzas el script.
+La aplicación espera el primer intervalo de cinco minutos antes de lanzar una ejecución y después repite periódicamente sobre el grupo aprovisionado. La primera puede no contener datos porque todavía no se hayan generado o ingerido conversaciones. No hay una evaluación nueva por cada pregunta, ni un temporizador que empiece cuando lanzas el script. Si falta el ID del grupo, la aplicación falla al validar su configuración: no lo crea como alternativa.
 
 Con la configuración actual, espera al siguiente intento de cinco minutos y añade el tiempo de ingesta y procesamiento. Si omites `PollingIntervalMinutes`, el intervalo coincide con `LookbackHours`, que es una hora. La aplicación solo ejecuta su temporizador mientras el proceso está vivo. Un contenedor detenido, un reinicio o el escalado pueden interrumpirlo; enviar preguntas no crea un programador externo duradero.
 
@@ -315,7 +318,7 @@ azd deploy agent-autoevaluations -e <nombre-del-entorno>
 
 Esto no lo hacen los scripts. Editar el archivo local, o establecer una variable local, no cambia un contenedor que ya está desplegado. La aplicación necesita arrancar con la nueva configuración. No ejecutes este paso si solo quieres utilizar el despliegue actual.
 
-Con cinco minutos de intervalo y una hora de ventana, se vuelven a evaluar trazas de ventanas solapadas. No son muestras independientes. Usa una sola réplica para la demo y restaura `60` y el despliegue correspondiente al terminar si modificaste la configuración. Un cambio de configuración también puede crear otro grupo de evaluación si cambia su huella de criterios, umbrales o modelo juez; conserva los identificadores de los informes que compares.
+Con cinco minutos de intervalo y una hora de ventana, se vuelven a evaluar trazas de ventanas solapadas. No son muestras independientes. Usa una sola réplica para la demo y restaura `60` y el despliegue correspondiente al terminar si modificaste la configuración. Cambiar criterios, umbrales o modelo juez requiere volver a ejecutar `azd provision` y después desplegar; ese aprovisionamiento puede crear otro grupo y conserva los anteriores. Cambiar solo el temporizador no crea otro grupo.
 
 ## 7. Abrir y leer los resultados
 
@@ -367,7 +370,7 @@ En cada ejecución:
 
 En calidad, una puntuación mayor es mejor. En severidad de violencia, una puntuación menor es mejor. Un valor nulo o un error no equivale a una puntuación de cero ni a un aprobado.
 
-Los evaluadores de relevancia, coherencia, fluidez y comunicación utilizan el modelo juez configurado; el de violencia utiliza el evaluador de seguridad alojado. El evaluador de enlaces ejecuta el código Python registrado por la aplicación en Foundry, no en tu terminal. No necesitas instalar Python para usarlo.
+Los evaluadores de relevancia, coherencia, fluidez y comunicación utilizan el modelo juez configurado; el de violencia utiliza el evaluador de seguridad alojado. El evaluador de enlaces ejecuta el código Python publicado durante el aprovisionamiento de Foundry, no en la aplicación ni en tu terminal. No necesitas instalar Python para usarlo.
 
 ### Cómo interpretar los evaluadores personalizados
 
@@ -402,9 +405,11 @@ Ninguno de estos evaluadores reescribe las respuestas ni las bloquea. No esperes
 
 Si una petición falla, el script se detiene: no cambia automáticamente permisos, infraestructura o configuración. Diagnostica antes de repetir el lote. Al ejecutarlo de nuevo comienza desde el primer escenario, no desde el turno fallido.
 
-### Error de permisos al registrar los evaluadores
+### Errores de aprovisionamiento y permisos de ejecución
 
-Si los logs muestran `Failed to configure Foundry trace evaluation` junto a `PermissionDenied`, revisa los permisos de la **identidad propia del agente**, no solamente los de tu usuario o la identidad del proyecto. El agente puede responder a preguntas y, aun así, no tener acceso al catálogo de evaluadores.
+Si el hook `postprovision` falla al publicar evaluadores o crear el grupo, revisa la sesión de Azure CLI y los permisos de la **identidad que aprovisiona**, no los de la identidad del agente. En Windows utiliza PowerShell 7.4 o posterior; en Linux/macOS/WSL utiliza [Bash](scripts/initialize-foundry-evaluation.sh), `jq` y `sha256sum` o `shasum`, sin necesitar PowerShell. Dentro de WSL, usa instalaciones Linux de Azure CLI y `azd`. La autenticación de `azd` no sustituye a la de Azure CLI. El despliegue se detiene si falta esa configuración.
+
+Si falla una ejecución periódica con `PermissionDenied`, revisa los permisos de la **identidad propia del agente**, no solamente los de tu usuario o la identidad del proyecto. El agente puede responder y, aun así, carecer de permisos para lanzar evaluaciones sobre trazas. El registro de evaluadores ya no se reintenta desde la aplicación.
 
 El hook de servicio `postdeploy` de [azure.yaml](azure.yaml) obtiene la identidad del agente después de desplegarlo y le concede `Foundry User` en la cuenta Foundry de la demo, solo si la asignación no existe. Se ejecuta automáticamente dentro de una única llamada a `azd up` y también después de `azd deploy agent-autoevaluations`. No necesitas guardar el ID ni ejecutar `azd up` una segunda vez.
 

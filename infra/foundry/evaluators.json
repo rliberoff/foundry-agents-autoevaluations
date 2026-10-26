@@ -1,0 +1,105 @@
+{
+    "official_microsoft_links": {
+        "source_file": "official_microsoft_links.py",
+        "evaluator": {
+            "display_name": "Official Microsoft links",
+            "description": "Checks explicit web URLs against an exact HTTPS Microsoft-domain allowlist; does not verify facts or follow links.",
+            "evaluator_type": "custom",
+            "categories": [
+                "quality"
+            ],
+            "definition": {
+                "type": "code",
+                "init_parameters": {
+                    "type": "object",
+                    "properties": {
+                        "deployment_name": {
+                            "type": "string"
+                        },
+                        "pass_threshold": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "deployment_name",
+                        "pass_threshold"
+                    ]
+                },
+                "data_schema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "response": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "response"
+                    ]
+                },
+                "metrics": {
+                    "result": {
+                        "type": "continuous",
+                        "desirable_direction": "increase",
+                        "min_value": 0,
+                        "max_value": 1
+                    }
+                }
+            }
+        }
+    },
+    "corporate_communication": {
+        "source_file": "corporate_communication.txt",
+        "evaluator": {
+            "display_name": "Corporate communication",
+            "description": "Scores language choice, professional tone, and practical guidance for enterprise conversations.",
+            "evaluator_type": "custom",
+            "categories": [
+                "quality"
+            ],
+            "definition": {
+                "type": "prompt",
+                "init_parameters": {
+                    "type": "object",
+                    "properties": {
+                        "deployment_name": {
+                            "type": "string"
+                        },
+                        "threshold": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "deployment_name",
+                        "threshold"
+                    ]
+                },
+                "data_schema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "response": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "query",
+                        "response"
+                    ]
+                },
+                "metrics": {
+                    "custom_prompt": {
+                        "type": "ordinal",
+                        "desirable_direction": "increase",
+                        "min_value": 1,
+                        "max_value": 5
+                    }
+                }
+            }
+        }
+    }
+}

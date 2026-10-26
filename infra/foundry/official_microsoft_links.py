@@ -1,6 +1,5 @@
 import re
 
-
 ALLOWED_HOSTS = frozenset(
     {
         "learn.microsoft.com",
@@ -10,7 +9,6 @@ ALLOWED_HOSTS = frozenset(
         "support.microsoft.com",
     }
 )
-
 
 def response_text(value: object) -> str:
     if isinstance(value, str):
@@ -22,7 +20,6 @@ def response_text(value: object) -> str:
             return ""
         return response_text(value.get("content", value.get("text", "")))
     return ""
-
 
 def grade(sample: dict, item: dict) -> float:
     """Check explicit web URLs, not the truth or completeness of a response."""

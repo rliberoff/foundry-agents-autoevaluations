@@ -21,16 +21,9 @@ internal static class IServiceCollectionExtensions
     {
         services.AddOptionsWithValidateOnStart<FoundryContinuousEvaluationOptions>()
                 .Bind(configuration.GetSection(nameof(FoundryContinuousEvaluationOptions)))
-                .PostConfigure(options =>
-                {
-                    if (string.IsNullOrWhiteSpace(options.ModelDeploymentName))
-                    {
-                        options.ModelDeploymentName = configuration[@"AZURE_AI_MODEL_DEPLOYMENT_NAME"] ?? string.Empty;
-                    }
-                })
                 .ValidateDataAnnotations()
-                .Validate(options => options.Evaluators.All(FoundryEvaluationConfiguration.IsSupportedEvaluator), @"Select evaluators supported by this trace-only demo.")
-                .Validate(options => options.Evaluators.Distinct(StringComparer.Ordinal).Count() == options.Evaluators.Count, @"Evaluator names must be unique.")
+                .Validate(options => !options.IsEnabled || options.TraceSamplingPercentage == 0 || !string.IsNullOrWhiteSpace(options.EvaluationId),
+                    @"EvaluationId is required when evaluation is enabled. Run azd provision and deploy with FOUNDRY_EVALUATION_ID.")
                 .Validate(options => double.IsFinite(options.TraceSamplingPercentage), @"TraceSamplingPercentage must be finite.");
 
         services.AddHostedService(serviceProvider =>

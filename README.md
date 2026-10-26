@@ -10,6 +10,8 @@ The generators use `azd ai agent invoke --output raw`, read the Responses stream
 
 ```mermaid
 flowchart LR
+Provision[AZD postprovision / Azure CLI] --> Catalog[Evaluators and evaluation group]
+Catalog -->|Provisioned group ID| Worker
 Channels[Teams / Microsoft 365 Copilot] --> Agent[Existing .NET hosted agent]
 Agent -->|Documentation tools| Learn[Microsoft Learn MCP]
 Agent -->|OpenTelemetry| Insights[Application Insights]
@@ -24,8 +26,8 @@ The existing `AgentHost`, Responses endpoint, dependency injection, options, mod
 For Microsoft technology questions, the agent is instructed to consult the public [Microsoft Learn MCP server](https://learn.microsoft.com/en-us/training/support/mcp) at `https://learn.microsoft.com/api/mcp` and cite source URLs returned by its tools. The existing Foundry SDK declares only `microsoft_docs_search`, `microsoft_docs_fetch`, and `microsoft_code_sample_search`; the backing Responses service invokes them remotely. These read-only tools need no authentication and are configured without interactive approval. No Toolbox, AI Search index, PDF ingestion, or additional packages are required. Queries reach a public documentation service: use nonsensitive search terms, not secrets or private conversation details.
 
 1. The existing hosting integration emits OpenTelemetry spans for user interactions.
-2. `FoundryContinuousEvaluationService` registers missing custom evaluator definitions and creates or reuses a matching evaluation group.
-3. The first evaluation starts immediately. Subsequent evaluations use the configured polling interval, currently five minutes, and select up to 50 traces from the preceding hour.
+2. During `azd provision`, the `postprovision` hook registers missing custom evaluator definitions and creates or reuses a matching evaluation group. Deployment passes its ID to `FoundryContinuousEvaluationService`; the agent never publishes evaluator definitions or creates groups.
+3. The first evaluation starts after the configured polling interval, currently five minutes. Subsequent evaluations use the same interval and select up to 50 traces from the preceding hour.
 4. Foundry evaluates the captured query/response data with four built-in and two custom evaluators.
 5. The background service polls for completion and logs the report URL and per-evaluator passed/failed counts. Inspect individual scores and judge explanations in Foundry's evaluation report.
 
@@ -48,7 +50,7 @@ The published support for coherence and fluency is currently English. Use Englis
 
 ### Deterministic Microsoft link policy
 
-The [Python evaluator](src/Foundry.Agents.Autoevaluation.Demo/EmbeddedResources/official_microsoft_links.py) checks explicit web URLs in the response. Every inspected URL must use HTTPS, have no user information or nonstandard port, and match one of these exact hosts:
+The [Python evaluator](infra/foundry/official_microsoft_links.py) checks explicit web URLs in the response. Every inspected URL must use HTTPS, have no user information or nonstandard port, and match one of these exact hosts:
 
 - `learn.microsoft.com`
 - `azure.microsoft.com`
@@ -58,32 +60,59 @@ The [Python evaluator](src/Foundry.Agents.Autoevaluation.Demo/EmbeddedResources/
 
 Missing or empty responses fail. A nonempty response with no links passes because it contains no link-policy violation. Subdomains outside the exact list, HTTP, external domains, and shorteners such as `aka.ms` fail. The evaluator does not open URLs, follow redirects, verify availability or factual support, require citations, or provide a security boundary. It is a deterministic demonstration policy, not a complete URL or Markdown security parser.
 
-The Python source is embedded in the .NET assembly and registered in Foundry's evaluator catalog. Foundry executes it in its sandbox with no network access. The evaluator imports only `re`: the live grader rejects `urllib.parse`, even though it is part of Python's standard library. Its input schema declares `response` directly, matching the evaluation's `data_mapping`; adding a required `item` wrapper causes evaluation validation to fail. The agent container does not need Python, a Python SDK, or an additional endpoint. The code evaluator still receives `deployment_name` because the service's initialization contract requires it, not because its grading function invokes a model.
+The Python source belongs to infrastructure and is published to Foundry's evaluator catalog by Azure CLI during provisioning, not embedded in the .NET assembly. Foundry executes it in its sandbox with no network access. The evaluator imports only `re`: the live grader rejects `urllib.parse`, even though it is part of Python's standard library. Its input schema declares `response` directly, matching the evaluation's `data_mapping`; adding a required `item` wrapper causes evaluation validation to fail. The agent container does not need Python, a Python SDK, or an additional endpoint. The code evaluator still receives `deployment_name` because the service's initialization contract requires it, not because its grading function invokes a model.
 
 ### Corporate communication judge
 
-The [judge prompt](src/Foundry.Agents.Autoevaluation.Demo/EmbeddedResources/corporate_communication.txt) assigns an ordinal score from 1 to 5 using three criteria: respond in the appropriate language, maintain a professional and direct tone, and provide practical guidance appropriate to the request. It returns Foundry's `result` and `reason` JSON contract and instructs the judge to treat conversation content as untrusted data rather than grading instructions.
+The [judge prompt](infra/foundry/corporate_communication.txt) assigns an ordinal score from 1 to 5 using three criteria: respond in the appropriate language, maintain a professional and direct tone, and provide practical guidance appropriate to the request. It returns Foundry's `result` and `reason` JSON contract and instructs the judge to treat conversation content as untrusted data rather than grading instructions.
 
 These evaluators measure the existing agent; they do not rewrite its instructions or block its answers. A failed policy score is an observation to review, not a fabricated demonstration result or a claim that the agent enforced the policy.
 
 ## Configuration and runtime behavior
 
-Configure [appsettings.json](src/Foundry.Agents.Autoevaluation.Demo/appsettings.json) or use the corresponding .NET environment-variable names, such as `FoundryContinuousEvaluationOptions__ModelDeploymentName`. Restart the process after changing evaluation settings.
+Configure Foundry resources in [infra/foundry/evaluation.json](infra/foundry/evaluation.json) and [infra/foundry/evaluators.json](infra/foundry/evaluators.json). The first file selects evaluators, thresholds and the judge deployment; the second declares custom definitions and their Python or prompt source files. Changes take effect on the next `azd provision`, followed by deployment.
+
+The root `postprovision` hook selects [PowerShell](scripts/Initialize-FoundryEvaluation.ps1) on Windows and [Bash](scripts/initialize-foundry-evaluation.sh) on Linux/macOS/WSL. Windows requires PowerShell 7.4 or later; POSIX systems require Bash, `jq`, and `sha256sum` or `shasum`, without PowerShell. Both implementations use the same configuration and generate identical payloads, catalog names and group fingerprints. Azure CLI must be authenticated separately from `azd`. The hook calls Foundry's data-plane API through `az rest` with the `https://ai.azure.com` token audience and saves `FOUNDRY_EVALUATION_ID` to the selected azd environment. The deployment identity needs evaluator and evaluation-group write permissions on the project. A failed publication stops provisioning; it never silently falls back to runtime registration.
+
+Validate payloads without accessing Azure:
+
+```powershell
+./scripts/Initialize-FoundryEvaluation.ps1 -ValidateOnly
+```
+
+On Linux/macOS/WSL, validate the same payloads without PowerShell:
+
+```bash
+bash scripts/initialize-foundry-evaluation.sh --validate-only
+```
+
+Both validation commands read configuration without authenticating or accessing Azure.
+
+After changing Foundry configuration, run `azd provision -e relv` and `azd deploy agent-autoevaluations -e relv`, or use `azd up -e relv`. These commands modify Azure and can incur charges. `azd deploy` alone does not publish changed evaluator definitions. The hook can also be rerun with `azd hooks run postprovision -e relv`; it creates missing configuration but never submits conversations or evaluation runs.
+
+Provisioning settings:
+
+| Setting | Current value | Meaning |
+| :--- | :--- | :--- |
+| `EvaluationName` | `evaluation-demo-insights` | Evaluation group display name |
+| `ModelDeploymentName` | `gpt-6.1-sol` | Judge deployment in the target Foundry account |
+| `Evaluators` | Six criteria | Built-in and custom evaluator selection |
+| `QualityPassThreshold` | `3` | Minimum built-in quality score |
+| `CommunicationPassThreshold` | `4` | Minimum communication score |
+| `SafetySeverityThreshold` | `3` | Maximum acceptable violence severity |
+
+Configure runtime scheduling in [appsettings.json](src/Foundry.Agents.Autoevaluation.Demo/appsettings.json) or with corresponding .NET environment variables. [azure.yaml](azure.yaml) passes `FOUNDRY_EVALUATION_ID` as `FoundryContinuousEvaluationOptions__EvaluationId`. Local runs with evaluations enabled must supply that ID too; missing configuration fails startup rather than creating resources.
 
 The following table reflects the checked-in demo configuration, with code defaults for omitted settings. Keep the judge deployment available in the target Foundry account.
 
 | Setting | Current value | Meaning |
 | :--- | :--- | :--- |
-| `IsEnabled` | `true` | Register and run evaluations when the agent starts |
-| `EvaluationName` | `evaluation-demo-insights` | Evaluation group display name |
-| `ModelDeploymentName` | `gpt-6.1-sol` | Explicit judge deployment; an empty value falls back to `AZURE_AI_MODEL_DEPLOYMENT_NAME` |
+| `IsEnabled` | `true` | Run evaluations using the provisioned group |
+| `EvaluationId` | From `FOUNDRY_EVALUATION_ID` | Provisioned group ID; required when evaluation and sampling are enabled |
 | `PollingIntervalMinutes` | `5` | Interval between evaluation attempts; omit it to use the lookback window |
 | `LookbackHours` | `1` | UTC trace-selection window |
 | `MaxTracesPerRun` | `50` | Maximum requested trace count before cap scaling |
-| `TraceSamplingPercentage` | `100` | Scale the trace cap; `0` skips setup and runs |
-| `QualityPassThreshold` | `3` | Minimum built-in quality score |
-| `CommunicationPassThreshold` | `4` | Minimum communication score |
-| `SafetySeverityThreshold` | `3` | Maximum acceptable violence severity |
+| `TraceSamplingPercentage` | `100` | Scale the trace cap; `0` skips runs |
 | `ResultPollingIntervalSeconds` | `10` | Interval between run-status checks |
 | `ResultTimeoutMinutes` | `10` | Local result-wait limit, not remote cancellation |
 
@@ -97,7 +126,7 @@ For an ID-based filter, `agent_id` must match the emitted `gen_ai.agent.id`. The
 
 An ID-based filter could follow future deployed versions without manual updates by reading the platform-injected `FOUNDRY_AGENT_NAME` and `FOUNDRY_AGENT_VERSION` at startup and passing the corresponding `name:version` identifier to the evaluation service. First verify that the .NET hosting integration emits that exact value in `gen_ai.agent.id`. Each new version's container would then evaluate its own version, not all historical versions. This alternative is not implemented; the demo retains the simpler name-based filter.
 
-Starting the agent with evaluation enabled can create custom evaluator versions, evaluation groups, and paid evaluation runs. Custom catalog names include a content hash. Evaluation groups are reused only when their name and configuration fingerprint match; changing criteria, thresholds, or judge deployment creates another group and preserves historical results. No historical resources are deleted automatically.
+Starting the agent with evaluation enabled creates only paid evaluation runs, never evaluator versions or groups. Provisioning uses canonical JSON and normalized source line endings for content-hashed catalog names. Existing definitions are verified before reuse; a conflicting definition fails provisioning. Evaluation groups are reused only when their name and configuration fingerprint match; changing criteria, thresholds, or judge deployment creates another group and preserves historical results. No historical resources are deleted automatically. This is scripted provisioning through AZD, not native Terraform lifecycle management of evaluator assets.
 
 Use one running replica for this demonstration. Each replica has its own timer; multiple replicas, restarts, overlapping windows, or telemetry ingestion delays can cause duplicate or missed evaluations. There is no distributed scheduler, durable watermark, or exactly-once guarantee. If result polling times out, the remote evaluation continues; review it in Foundry. Results from these periodic runs are not guaranteed to appear in the native agent continuous-monitoring dashboard.
 
@@ -108,6 +137,7 @@ The Teams/Copilot integration must already reach the deployed agent. Before demo
 - The Foundry project has a working Application Insights connection and network access for telemetry ingestion and evaluation queries.
 - Captured spans include `gen_ai.operation.name=invoke_agent`, agent identity attributes, and populated `gen_ai.input.messages` / `gen_ai.output.messages`. Missing conversation content can produce null quality scores. Recording content requires appropriate consent, redaction, retention, and access controls.
 - The application identity submitting evaluations has **Foundry User** or equivalent permissions. Model inference requires the appropriate Foundry account scope, not only project access.
+- The deployment identity publishing Foundry configuration has project permissions to create evaluators and evaluation groups. This is separate from the agent's runtime permissions.
 - The project managed identity has **Reader** on the connected Application Insights resource. Workspace-only permission mode additionally requires **Log Analytics Reader** on the linked workspace. Protected tables and DataActionsOnly mode require the additional roles described in the permissions reference.
 - Your portal identity has access to the evaluation results and the relevant logs. Do not print or commit connection strings, tokens, or raw private conversations when troubleshooting.
 
@@ -117,7 +147,7 @@ See [trace data requirements](https://learn.microsoft.com/en-us/azure/foundry/ob
 
 1. Verify the trace and permission prerequisites, judge deployment, and single-replica setup. Use consented, nonsensitive interactions.
 2. Through the existing Teams or Copilot channel, ask questions such as "Explain what Microsoft Foundry is in two sentences", "Give me three steps to review a Foundry agent's traces", and "Link to official Microsoft Learn documentation about evaluating agents". These exercise factual-answer, procedural, and link-policy criteria without promising particular scores.
-3. Confirm that actual interaction spans and message content arrive in Application Insights. Allow for ingestion delay; the startup run can be empty before users interact.
+3. Confirm that actual interaction spans and message content arrive in Application Insights. Allow for ingestion delay; the first scheduled run can be empty before users interact.
 4. Wait for the next configured run. The checked-in demo uses `PollingIntervalMinutes=5`; set it to `60` and redeploy when hourly evaluations are preferable. The one-hour lookback overlaps with five-minute runs, so traces can be evaluated again.
 5. In the Foundry project, open **Evaluations**, find `evaluation-demo-insights`, and inspect the run. Use the logged evaluation/run IDs and report URL to identify the matching group when historical configurations share the same display name.
 6. Compare built-in scores with the link-policy result and communication judge's explanation. Inspect failures and null/error results before interpreting aggregates. Correlate examples with their source traces; a run with no usable interactions is not evidence of passing quality.
@@ -125,17 +155,19 @@ See [trace data requirements](https://learn.microsoft.com/en-us/azure/foundry/ob
 
 ### Verified evaluation in relv
 
+The following results belong to the earlier `nfjp5` deployment, before moving publication into provisioning. That deployment has been deleted, so its report links may no longer resolve. They are historical observations, not verification of the new provisioning workflow or a reconstructed environment.
+
 On October 25, 2026, hosted-agent version `19` created run `evalrun_84f60804ce2c4b0597877b34bcc85a38` in group `eval_619d7f17330a459aa6de5ee68dd44b75` (`evaluation-demo-insights`). The run completed with seven evaluated items, all six criteria populated, and zero errored or skipped results. Both `official_microsoft_links` and `corporate_communication` returned passing scores for all seven items. These are real evaluation results from demo traffic, not a guarantee of future scores or production quality.
 
 A later periodic run, `evalrun_6a88e1151b1048f599e94bd895f2e70b`, processed 28 items and exposed 13 empty responses from the earlier CLI traffic. Both custom evaluators failed those items, while relevance, coherence, and fluency reported `Response string cannot be empty`. Historical failures remain visible. After switching the generators to the complete raw stream, a live three-turn conversation returned nonempty text in every turn; trace ingestion and later evaluation still require separate verification.
 
-Open the [verified Foundry evaluation report](https://ai.azure.com/nextgen/r/UIm8hLgORwWauJsYGYu3uQ,rg-demo-foundry-agents-autoevaluation-nfjp5,,aif-demo-foundry-agents-autoevaluation-nfjp5,proj-demo-foundry-agents-autoevaluation-nfjp5/build/evaluations/eval_619d7f17330a459aa6de5ee68dd44b75/run/evalrun_84f60804ce2c4b0597877b34bcc85a38) with an authorized portal account. Find custom definitions under **Evaluations > Evaluator catalog** and scored runs under **Evaluations**. Their catalog names have a content-hash suffix; historical configurations and failed runs remain available. Use the run ID or report URL instead of selecting only by display name.
+The [historical Foundry evaluation report](https://ai.azure.com/nextgen/r/UIm8hLgORwWauJsYGYu3uQ,rg-demo-foundry-agents-autoevaluation-nfjp5,,aif-demo-foundry-agents-autoevaluation-nfjp5,proj-demo-foundry-agents-autoevaluation-nfjp5/build/evaluations/eval_619d7f17330a459aa6de5ee68dd44b75/run/evalrun_84f60804ce2c4b0597877b34bcc85a38) identifies that earlier result. In an active deployment, find custom definitions under **Evaluations > Evaluator catalog** and scored runs under **Evaluations**. Their catalog names have a content-hash suffix. Use the run ID or report URL instead of selecting only by display name.
 
 If setup fails, distinguish `PermissionDenied` from a schema error such as `MissingRequiredDataMapping`. If a created run reaches `failed`, inspect its `error` object: a forbidden Python import is a grader-runtime failure, not an RBAC failure. The background service logs that remote error and retries on the next interval; successful aggregate results use the API's `testing_criteria` field.
 
 ## Deploy the hosted agent
 
-Run commands from the repository root. Install Azure Developer CLI with the `azure.ai.agents` extension (at least `1.0.0-beta.12`), Azure CLI, and Terraform matching the pinned provider requirements. Authenticate both CLIs against the deployment tenant and subscription. The postdeploy hook requires PowerShell 7 on Windows, or Bash and `jq` on Linux/macOS/WSL. Local Docker is not required: Azure Container Registry Tasks builds the image remotely.
+Run commands from the repository root. Install Azure Developer CLI with the `azure.ai.agents` extension (at least `1.0.0-beta.12`), Azure CLI, and Terraform matching the pinned provider requirements. Authenticate both CLIs against the deployment tenant and subscription. The postprovision hook uses PowerShell 7.4 or later on Windows, or Bash, `jq`, and `sha256sum` or `shasum` on Linux/macOS/WSL. The separate postdeploy identity hook uses PowerShell on Windows, or Bash and `jq` on POSIX systems. PowerShell is not required for either hook on Linux/macOS/WSL; use native Linux installations of Azure CLI and `azd` inside WSL. Local Docker is not required: Azure Container Registry Tasks builds the image remotely.
 
 Select an azd environment with `AZURE_SUBSCRIPTION_ID`, `AZURE_LOCATION`, and `TF_VAR_suffix` configured. The suffix must contain exactly five lowercase letters or digits. Choose a region that supports both hosted agents and the model configured in Terraform, with sufficient quota.
 
@@ -146,6 +178,10 @@ azd up
 ```
 
 The native azd workflow provisions Terraform's `backend` and `resources` layers before publishing and deploying `agent-autoevaluations` to the Foundry project. Package preparation can overlap with provisioning; the remote image build and publication run once the infrastructure is available. Keep the native workflow instead of overriding `workflows.up`, so service-target extensions remain available throughout execution. The Docker build uses the repository root as its context so the shared .NET build and package configuration is available. Images use azd-generated version tags.
+
+After a complete `azd down`, the `postdown` hook in [azure.yaml](azure.yaml) checks the local `backend` layer's state. Only when it contains no managed resources or outputs does the hook remove `.azure/<environment>/infra/resources/.terraform`, the resources layer's local initialization cache. The next `azd up` initializes against the newly provisioned backend instead of retaining a deleted state account. The [PowerShell](scripts/Reset-TerraformBackendCache.ps1) and [Bash](scripts/reset-terraform-backend-cache.sh) implementations preserve actual state files outside that cache, environment settings, and other environments. Repeating the cleanup is a no-op; missing backend state or remaining resources/outputs keep the cache, while malformed state and linked paths fail without deleting it. The POSIX cleanup requires Bash and `jq`.
+
+This hook prevents stale initialization after future complete teardowns; it does not repair a cache already pointing at a previous backend. For that recovery, first confirm that the previous deployment was fully destroyed and that no state migration is needed, then use [`terraform init -reconfigure`](https://developer.hashicorp.com/terraform/cli/commands/init#backend-initialization) with the current generated backend configuration and azd's environment-specific `TF_DATA_DIR`. Do not enable unconditional reconfiguration for every `up`: an unintended backend change could otherwise disconnect Terraform from resources it still manages. Model-quota failures stop Terraform before `postprovision`: neither Foundry publication nor agent deployment has succeeded in that case.
 
 Terraform exports the ACR and Foundry settings into the azd environment, connects the project to ACR and Application Insights, and grants the provisioning identity Foundry User access on the project. The project managed identity already receives `AcrPull` through the ACR module. The provisioning identity also needs resource creation and role-assignment permissions; the deployment identity needs permission to run ACR Tasks and publish images. If provisioning and deployment use different identities, grant the deployment identity Foundry project access separately. See the [hosted agent permissions reference](https://learn.microsoft.com/azure/foundry/agents/concepts/hosted-agent-permissions).
 
