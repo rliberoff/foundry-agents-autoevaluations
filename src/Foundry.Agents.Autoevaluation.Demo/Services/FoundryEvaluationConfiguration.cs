@@ -17,7 +17,7 @@ internal static class FoundryEvaluationConfiguration
         return new FoundryEvaluationRunRequest
         {
             EvalId = evaluationId,
-            Name = $@"{evaluationId}-{now:yyyyMMdd-HHmmss}",
+            Name = $@"{now:yyyyMMdd-HHmmss}",
             DataSource = new FoundryEvaluationRunDataSource
             {
                 TraceSource = new FoundryEvaluationTraceSource

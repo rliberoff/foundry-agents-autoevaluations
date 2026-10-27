@@ -54,6 +54,8 @@ services:
         value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
       - name: FoundryContinuousEvaluationOptions__EvaluationId
         value: ${FOUNDRY_EVALUATION_ID}
+      - name: OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT
+        value: "8192"
     hooks:
       postdeploy:
         windows:

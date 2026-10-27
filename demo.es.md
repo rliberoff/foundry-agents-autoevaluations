@@ -159,9 +159,12 @@ Hay dos implementaciones equivalentes:
 - [scripts/Invoke-DemoConversations.ps1](scripts/Invoke-DemoConversations.ps1): PowerShell 7
 - [scripts/invoke-demo-conversations.sh](scripts/invoke-demo-conversations.sh): Bash para WSL
 
-Ambas leen [scripts/demo-conversations.json](scripts/demo-conversations.json), que contiene cuatro escenarios en inglés y sus cuatro equivalentes en español. Cada escenario tiene tres turnos relacionados: una pregunta inicial y dos preguntas de seguimiento.
+Ambas permiten elegir entre dos catálogos. Cada escenario tiene tres turnos relacionados: una pregunta inicial y dos preguntas de seguimiento.
 
-Los temas cubren una introducción a Foundry, revisión de trazas, documentación de evaluaciones e identidades administradas. Son preguntas técnicas sin datos privados. Los mensajes del script y sus parámetros están en inglés; las conversaciones pueden ser en cualquiera de los dos idiomas.
+- `microsoft`: [scripts/demo-conversations.json](scripts/demo-conversations.json), con cuatro escenarios en inglés y sus cuatro equivalentes en español sobre Foundry, trazas, evaluaciones e identidades administradas. Es la opción predeterminada y corresponde al dominio de Microsoft que esperan los evaluadores.
+- `generic`: [scripts/demo-conversations-generic.json](scripts/demo-conversations-generic.json), con dos escenarios en inglés y sus dos equivalentes en español sobre cocina y planes de fin de semana. Permite contrastar conversaciones ajenas a ese dominio.
+
+La categoría describe el tema, no garantiza una buena puntuación. Los mensajes del script y sus parámetros están en inglés; las conversaciones pueden ser en cualquiera de los dos idiomas.
 
 ### Primero: simular sin gastar tokens
 
@@ -213,12 +216,14 @@ bash scripts/invoke-demo-conversations.sh --environment <nombre-del-entorno> --c
 
 Escoge solo uno de los dos comandos. Ejecutar ambos duplica el tráfico.
 
-### Elegir idioma y volumen
+### Elegir tipo, idioma y volumen
 
 | PowerShell | Bash | Significado |
 | :--- | :--- | :--- |
 | `-Environment <nombre-del-entorno>` | `--environment <nombre-del-entorno>` | Entorno de `azd`; es obligatorio |
 | `-ConversationCount 6` | `--conversation-count 6` | Número de conversaciones, de 1 a 1000 |
+| `-ConversationType microsoft` | `--conversation-type microsoft` | Temas de Microsoft; valor predeterminado |
+| `-ConversationType generic` | `--conversation-type generic` | Conversaciones genéricas ajenas al dominio de Microsoft |
 | `-Language en` | `--language en` | Solo escenarios en inglés; valor predeterminado |
 | `-Language es` | `--language es` | Solo escenarios en español |
 | `-Language mixed` | `--language mixed` | Alterna escenarios completos en inglés y español |
@@ -236,7 +241,17 @@ Por ejemplo, para revisar primero ocho conversaciones alternando idiomas:
 bash scripts/invoke-demo-conversations.sh --environment <nombre-del-entorno> --conversation-count 8 --language mixed --dry-run
 ```
 
-Con el catálogo actual, el número de peticiones es tres veces el número de conversaciones. Si solicitas más conversaciones que escenarios disponibles para el idioma, el script vuelve al principio del catálogo. Por ejemplo, 12 conversaciones en inglés repiten tres veces sus cuatro escenarios: **más volumen no significa más diversidad**.
+Para revisar las cuatro conversaciones genéricas alternando idiomas en el entorno `relv`, elige uno de estos comandos:
+
+```powershell
+./scripts/Invoke-DemoConversations.ps1 -Environment relv -ConversationType generic -ConversationCount 4 -Language mixed -DryRun
+```
+
+```bash
+bash scripts/invoke-demo-conversations.sh --environment relv --conversation-type generic --conversation-count 4 --language mixed --dry-run
+```
+
+En ambos catálogos, el número de peticiones es tres veces el número de conversaciones. Si solicitas más conversaciones que escenarios disponibles para el tipo y el idioma elegidos, el script vuelve al principio del catálogo seleccionado. Por ejemplo, 12 conversaciones de Microsoft en inglés repiten tres veces sus cuatro escenarios; 12 genéricas en inglés repiten seis veces sus dos escenarios: **más volumen no significa más diversidad**.
 
 Para demostrar coherencia y fluidez, utiliza primero inglés: el soporte publicado de esos dos evaluadores es inglés. Puedes comprobar la respuesta en español y el juez de comunicación, pero no presentes sus métricas de coherencia o fluidez como validadas para ese idioma. Si mezclas idiomas, revisa las filas individuales antes de interpretar los agregados.
 

@@ -26,6 +26,9 @@ param(
     [ValidateSet('en', 'es', 'mixed')]
     [string] $Language = 'en',
 
+    [ValidateSet('microsoft', 'generic')]
+    [string] $ConversationType = 'microsoft',
+
     [ValidateRange(1, 3600)]
     [int] $TimeoutSeconds = 300,
 
@@ -37,7 +40,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$catalog = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot 'demo-conversations.json') -Raw | ConvertFrom-Json)
+$catalogFile = if ($ConversationType -eq 'generic') { 'demo-conversations-generic.json' } else { 'demo-conversations.json' }
+$catalog = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot $catalogFile) -Raw | ConvertFrom-Json)
 $scenarios = @($catalog | Where-Object { $Language -eq 'mixed' -or $_.language -eq $Language })
 
 if ($scenarios.Count -eq 0) {
@@ -69,7 +73,7 @@ if (-not $DryRun) {
 
 $sentTurns = 0
 $startedAt = [DateTime]::UtcNow.ToString('o')
-Write-Host "Start UTC: $startedAt | Environment: $Environment | Conversations: $ConversationCount | Language: $Language | Delay seconds: $DelaySeconds | Dry run: $DryRun"
+Write-Host "Start UTC: $startedAt | Environment: $Environment | Conversations: $ConversationCount | Type: $ConversationType | Language: $Language | Delay seconds: $DelaySeconds | Dry run: $DryRun"
 
 for ($conversationIndex = 0; $conversationIndex -lt $ConversationCount; $conversationIndex++) {
     $scenario = $scenarios[$conversationIndex % $scenarios.Count]
