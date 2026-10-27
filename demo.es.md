@@ -162,7 +162,7 @@ Hay dos implementaciones equivalentes:
 Ambas permiten elegir entre dos catálogos. Cada escenario tiene tres turnos relacionados: una pregunta inicial y dos preguntas de seguimiento.
 
 - `microsoft`: [scripts/demo-conversations.json](scripts/demo-conversations.json), con cuatro escenarios en inglés y sus cuatro equivalentes en español sobre Foundry, trazas, evaluaciones e identidades administradas. Es la opción predeterminada y corresponde al dominio de Microsoft que esperan los evaluadores.
-- `generic`: [scripts/demo-conversations-generic.json](scripts/demo-conversations-generic.json), con dos escenarios en inglés y sus dos equivalentes en español sobre cocina y planes de fin de semana. Permite contrastar conversaciones ajenas a ese dominio.
+- `generic`: [scripts/demo-conversations-generic.json](scripts/demo-conversations-generic.json), con dos escenarios en inglés y sus dos equivalentes en español sobre cocina y planes de fin de semana. Pide al agente que incluya en cada respuesta un enlace externo de `bbcgoodfood.com` o `lonelyplanet.com` para probar deliberadamente la ruta de fallo de `official_microsoft_links`.
 
 La categoría describe el tema, no garantiza una buena puntuación. Los mensajes del script y sus parámetros están en inglés; las conversaciones pueden ser en cualquiera de los dos idiomas.
 
@@ -393,9 +393,11 @@ Los evaluadores de relevancia, coherencia, fluidez y comunicación utilizan el m
 
 Una respuesta no vacía sin enlaces aprueba este evaluador porque no contiene una infracción de enlaces. Eso no significa que incluya citas ni que sus afirmaciones sean verdaderas. El evaluador no visita las páginas ni valida su disponibilidad o su contenido.
 
+El catálogo `generic` pide explícitamente que el enlace externo aparezca en la respuesta del agente, no solo en la pregunta. Si la respuesta incluye la URL solicitada, `official_microsoft_links` debe puntuar `0`; si el agente la omite y no devuelve ninguna URL, este evaluador puntúa `1`. La petición del prompt no garantiza la respuesta: confirma el texto y la puntuación de cada fila evaluada antes de interpretar el resultado.
+
 `corporate_communication` valora la respuesta con una rúbrica. Lee sus explicaciones y verifica manualmente si encajan con lo ocurrido. Es una medición que requiere calibración, no una garantía de estilo o cumplimiento corporativo.
 
-Ninguno de estos evaluadores reescribe las respuestas ni las bloquea. No esperes un fallo concreto ni fabriques un resultado para que la demo sea más vistosa. Las preguntas del catálogo permiten observar los criterios, pero no garantizan una distribución de puntuaciones ni validan exhaustivamente los evaluadores de seguridad.
+Ninguno de estos evaluadores reescribe las respuestas ni las bloquea. El catálogo `generic` está diseñado para solicitar un enlace no permitido como caso de prueba negativo, pero no garantiza que el agente lo incluya; no fabriques resultados y comprueba siempre las respuestas reales. Las preguntas del catálogo no garantizan una distribución de puntuaciones ni validan exhaustivamente los evaluadores de seguridad.
 
 ## 8. Problemas habituales
 

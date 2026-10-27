@@ -60,6 +60,8 @@ The [Python evaluator](infra/foundry/official_microsoft_links.py) checks explici
 
 Missing or empty responses fail. A nonempty response with no links passes because it contains no link-policy violation. Subdomains outside the exact list, HTTP, external domains, and shorteners such as `aka.ms` fail. The evaluator does not open URLs, follow redirects, verify availability or factual support, require citations, or provide a security boundary. It is a deterministic demonstration policy, not a complete URL or Markdown security parser.
 
+The `generic` conversation catalog deliberately asks the agent to include external links from `bbcgoodfood.com` or `lonelyplanet.com` in its responses. This exercises the failing path: a response containing either URL should score `0`, while a response that omits URLs still passes. The prompt requests the link but cannot guarantee that the agent includes it; inspect the evaluated response rows before reporting a failure.
+
 The Python source belongs to infrastructure and is published to Foundry's evaluator catalog by Azure CLI during provisioning, not embedded in the .NET assembly. Foundry executes it in its sandbox with no network access. The evaluator imports only `re`: the live grader rejects `urllib.parse`, even though it is part of Python's standard library. Its input schema declares `response` directly, matching the evaluation's `data_mapping`; adding a required `item` wrapper causes evaluation validation to fail. The agent container does not need Python, a Python SDK, or an additional endpoint. The code evaluator still receives `deployment_name` because the service's initialization contract requires it, not because its grading function invokes a model.
 
 ### Corporate communication judge
