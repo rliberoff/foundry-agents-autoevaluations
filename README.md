@@ -110,7 +110,7 @@ The following table reflects the checked-in demo configuration, with code defaul
 | `IsEnabled` | `true` | Run evaluations using the provisioned group |
 | `EvaluationId` | From `FOUNDRY_EVALUATION_ID` | Provisioned group ID; required when evaluation and sampling are enabled |
 | `PollingIntervalMinutes` | `5` | Interval between evaluation attempts; omit it to use the lookback window |
-| `LookbackHours` | `1` | UTC trace-selection window |
+| `LookbackMinutes` | `60` | UTC trace-selection window in minutes |
 | `MaxTracesPerRun` | `50` | Maximum requested trace count before cap scaling |
 | `TraceSamplingPercentage` | `100` | Scale the trace cap; `0` skips runs |
 | `ResultPollingIntervalSeconds` | `10` | Interval between run-status checks |

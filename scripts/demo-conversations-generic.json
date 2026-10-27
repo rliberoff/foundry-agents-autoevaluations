@@ -3,36 +3,36 @@
         "name": "everyday-cooking-en",
         "language": "en",
         "turns": [
-            "Suggest a simple vegetarian dinner I can cook in 30 minutes using chickpeas, tomatoes, and spinach. Include a short ingredient list and clear steps.",
-            "I only have canned chickpeas and frozen spinach. Adjust the recipe and keep the cooking time close to 30 minutes.",
-            "Summarize the final recipe as a concise checklist."
+            "Suggest a simple vegetarian dinner I can cook in 30 minutes using chickpeas, tomatoes, and spinach. Include a short ingredient list and clear steps. In your answer, include this exact external source link: https://www.bbcgoodfood.com/.",
+            "I only have canned chickpeas and frozen spinach. Adjust the recipe and keep the cooking time close to 30 minutes. In your answer, include this exact external source link: https://www.bbcgoodfood.com/.",
+            "Summarize the final recipe as a concise checklist. In your answer, include this exact external source link: https://www.bbcgoodfood.com/."
         ]
     },
     {
         "name": "everyday-cooking-es",
         "language": "es",
         "turns": [
-            "Sugiere una cena vegetariana sencilla que pueda preparar en 30 minutos con garbanzos, tomates y espinacas. Incluye una lista breve de ingredientes e instrucciones claras.",
-            "Solo tengo garbanzos enlatados y espinacas congeladas. Adapta la receta y mantén el tiempo de preparación cerca de 30 minutos.",
-            "Resume la receta final como una lista de pasos concisa."
+            "Sugiere una cena vegetariana sencilla que pueda preparar en 30 minutos con garbanzos, tomates y espinacas. Incluye una lista breve de ingredientes e instrucciones claras. En tu respuesta, incluye este enlace externo exacto como fuente: https://www.bbcgoodfood.com/.",
+            "Solo tengo garbanzos enlatados y espinacas congeladas. Adapta la receta y mantén el tiempo de preparación cerca de 30 minutos. En tu respuesta, incluye este enlace externo exacto como fuente: https://www.bbcgoodfood.com/.",
+            "Resume la receta final como una lista de pasos concisa. En tu respuesta, incluye este enlace externo exacto como fuente: https://www.bbcgoodfood.com/."
         ]
     },
     {
         "name": "weekend-planning-en",
         "language": "en",
         "turns": [
-            "Plan a relaxed Saturday in a city where it will rain. Suggest indoor activities, an inexpensive lunch, and a realistic schedule.",
-            "Make the plan suitable for someone who prefers quiet places and wants to avoid crowded attractions.",
-            "Summarize the revised plan in three short bullet points."
+            "Plan a relaxed Saturday in a city where it will rain. Suggest indoor activities, an inexpensive lunch, and a realistic schedule. In your answer, include this exact external reference link: https://www.lonelyplanet.com/.",
+            "Make the plan suitable for someone who prefers quiet places and wants to avoid crowded attractions. In your answer, include this exact external reference link: https://www.lonelyplanet.com/.",
+            "Summarize the revised plan in three short bullet points. In your answer, include this exact external reference link: https://www.lonelyplanet.com/."
         ]
     },
     {
         "name": "weekend-planning-es",
         "language": "es",
         "turns": [
-            "Organiza un sábado tranquilo en una ciudad donde lloverá. Sugiere actividades bajo techo, un almuerzo económico y un horario realista.",
-            "Adapta el plan para alguien que prefiere lugares tranquilos y quiere evitar las atracciones concurridas.",
-            "Resume el plan actualizado en tres puntos breves."
+            "Organiza un sábado tranquilo en una ciudad donde lloverá. Sugiere actividades bajo techo, un almuerzo económico y un horario realista. En tu respuesta, incluye este enlace externo exacto como referencia: https://www.lonelyplanet.com/.",
+            "Adapta el plan para alguien que prefiere lugares tranquilos y quiere evitar las atracciones concurridas. En tu respuesta, incluye este enlace externo exacto como referencia: https://www.lonelyplanet.com/.",
+            "Resume el plan actualizado en tres puntos breves. En tu respuesta, incluye este enlace externo exacto como referencia: https://www.lonelyplanet.com/."
         ]
     }
 ]

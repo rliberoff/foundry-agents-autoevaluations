@@ -23,7 +23,7 @@ internal static class FoundryEvaluationConfiguration
                 TraceSource = new FoundryEvaluationTraceSource
                 {
                     AgentName = agentName,
-                    StartTime = now.AddHours(-options.LookbackHours).ToUnixTimeSeconds(),
+                    StartTime = now.AddMinutes(-options.LookbackMinutes).ToUnixTimeSeconds(),
                     EndTime = now.ToUnixTimeSeconds(),
                     MaxTraces = Math.Max(1, (int)Math.Round(options.MaxTracesPerRun * options.TraceSamplingPercentage / 100d)),
                 },

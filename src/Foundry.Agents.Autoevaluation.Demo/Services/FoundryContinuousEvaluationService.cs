@@ -70,7 +70,7 @@ internal sealed partial class FoundryContinuousEvaluationService : BackgroundSer
         var evaluationId = options.EvaluationId;
 
         // First evaluation run is triggered after the initial polling interval to allow traces to accumulate.
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(options.PollingIntervalMinutes ?? (options.LookbackHours * 60)));
+        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(options.PollingIntervalMinutes ?? options.LookbackMinutes));
         await timer.WaitForNextTickAsync(stoppingToken);
 
         do

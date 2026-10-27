@@ -311,13 +311,13 @@ La programación de ejecuciones procede de [appsettings.json](src/Foundry.Agents
 | `EvaluationName` | `evaluation-demo-insights` | Nombre del grupo que debes buscar |
 | `ModelDeploymentName` | `gpt-6.1-sol` | Despliegue del modelo juez, distinto del modelo del agente |
 | `PollingIntervalMinutes` | `5` | Intervalo entre intentos de evaluación |
-| `LookbackHours` | `1` | Ventana de trazas de la última hora |
+| `LookbackMinutes` | `60` | Ventana de trazas en minutos (última hora) |
 | `MaxTracesPerRun` | `50` | Máximo solicitado de trazas por ejecución |
 | `TraceSamplingPercentage` | `100` | Mantiene el máximo de trazas sin reducirlo |
 
 La aplicación espera el primer intervalo de cinco minutos antes de lanzar una ejecución y después repite periódicamente sobre el grupo aprovisionado. La primera puede no contener datos porque todavía no se hayan generado o ingerido conversaciones. No hay una evaluación nueva por cada pregunta, ni un temporizador que empiece cuando lanzas el script. Si falta el ID del grupo, la aplicación falla al validar su configuración: no lo crea como alternativa.
 
-Con la configuración actual, espera al siguiente intento de cinco minutos y añade el tiempo de ingesta y procesamiento. Si omites `PollingIntervalMinutes`, el intervalo coincide con `LookbackHours`, que es una hora. La aplicación solo ejecuta su temporizador mientras el proceso está vivo. Un contenedor detenido, un reinicio o el escalado pueden interrumpirlo; enviar preguntas no crea un programador externo duradero.
+Con la configuración actual, espera al siguiente intento de cinco minutos y añade el tiempo de ingesta y procesamiento. Si omites `PollingIntervalMinutes`, el intervalo coincide con `LookbackMinutes`, que es 60 minutos. La aplicación solo ejecuta su temporizador mientras el proceso está vivo. Un contenedor detenido, un reinicio o el escalado pueden interrumpirlo; enviar preguntas no crea un programador externo duradero.
 
 El servicio filtra por nombre de agente y por ventana UTC, no por el lote del script. Puede incluir otras conversaciones del mismo agente dentro de esa ventana. Tampoco debes dar por hecho que incluye todas las versiones históricas.
 

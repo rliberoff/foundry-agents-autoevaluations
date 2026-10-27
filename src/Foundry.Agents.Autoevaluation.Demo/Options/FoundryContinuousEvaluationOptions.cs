@@ -30,14 +30,14 @@ public sealed class FoundryContinuousEvaluationOptions
     public int ResultTimeoutMinutes { get; init; } = 10;
 
     /// <summary>
-    /// Gets the number of hours to look back when evaluating traces. Default is 1 hour. Maximum is 168 hours (7 days).
+    /// Gets the number of minutes to look back when evaluating traces. Default is 60 minutes. Maximum is 10080 minutes (7 days).
     /// </summary>
-    [Range(1, 168)]
-    public int LookbackHours { get; init; } = 1;
+    [Range(1, 10080)]
+    public int LookbackMinutes { get; init; } = 60;
 
     /// <summary>
     /// Gets an optional override for the polling interval between evaluation runs in minutes.
-    /// When <see langword="null"/> , the interval matches <see cref="LookbackHours"/>.
+    /// When <see langword="null"/> , the interval matches <see cref="LookbackMinutes"/>.
     /// </summary>
     [Range(1, int.MaxValue)]
     public int? PollingIntervalMinutes { get; init; }

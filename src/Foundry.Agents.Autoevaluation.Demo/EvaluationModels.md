@@ -137,7 +137,7 @@ All three properties are `required`. The service also passes `EvalId` to the cli
 | `EndTime` | `end_time` | `long` | Window end as Unix seconds |
 | `MaxTraces` | `max_traces` | `int` | Maximum number of traces requested |
 
-Every property except `Type` is `required`. The builder captures the current UTC time once, uses it as `EndTime`, and subtracts `LookbackHours` to obtain `StartTime`.
+Every property except `Type` is `required`. The builder captures the current UTC time once, uses it as `EndTime`, and subtracts `LookbackMinutes` in minutes to obtain `StartTime`.
 
 For positive sampling percentages, `MaxTraces` is `MaxTracesPerRun * TraceSamplingPercentage / 100`, rounded with `Math.Round` and constrained to at least one. This changes the requested trace limit; the models do not implement random sampling. The service skips runs when sampling is zero, and the builder rejects nonpositive percentages.
 
