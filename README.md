@@ -235,3 +235,7 @@ The build does not start the agent or run evaluations. Verify trace ingestion, p
 - [Retrieve evaluation results and reports](https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/cloud-evaluation-results)
 - [General-purpose evaluator support and interpretation](https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/general-purpose-evaluators)
 - [Evaluation identity and permission requirements](https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-permissions)
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
