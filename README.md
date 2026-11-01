@@ -230,6 +230,7 @@ The build does not start the agent or run evaluations. Verify trace ingestion, p
 
 ## References
 
+- [Set up continuous evaluation in Microsoft Foundry | C#](https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/how-to-monitor-agents-dashboard?tabs=csharp#set-up-continuous-evaluation)
 - [Evaluate deployed interactions without replaying requests](https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/cloud-evaluation-deployed-interactions)
 - [Create code-based and prompt-based custom evaluators](https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/custom-evaluators)
 - [Retrieve evaluation results and reports](https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/cloud-evaluation-results)
